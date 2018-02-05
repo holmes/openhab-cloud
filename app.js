@@ -40,6 +40,7 @@ var loadConfig = function() {
 loadConfig();
 
 var internalAddress = system.getInternalAddress();
+logger.info('openHAB-cloud: internalAddress: ' + internalAddress);
 
 require('heapdump');
 
@@ -744,9 +745,12 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('itemupdate', function (data) {
+        logger.info("Processing item update");
+
         var self = this;
         //if openhabId is missing then user has not completed auth
         if (self.openhabId === undefined) {
+            logger.info("openhabId not set, is auth completed?");
             return;
         }
         var limiter = new Limiter({
@@ -770,6 +774,7 @@ io.sockets.on('connection', function (socket) {
                 logger.info('openHAB-cloud: Item ' + itemName + ' status.length (' + (itemStatus ? itemStatus.length : 'null') + ') is too big or null, ignoring update');
                 return;
             }
+            logger.info("made it here");
             Openhab.findById(self.openhabId).cache().exec(function (error, openhab) {
                 if (error) {
                     logger.warn('openHAB-cloud: Unable to find openHAB for itemUpdate: ' + error);
@@ -798,6 +803,7 @@ io.sockets.on('connection', function (socket) {
                             status: ''
                         });
                     }
+                    logger.info("made it here 2");
                     // If item status changed, update item and create new item status change event
                     if (itemToUpdate.status !== itemStatus) {
                         // Update previous status value
@@ -860,6 +866,7 @@ io.sockets.on('connection', function (socket) {
                             });
                         }
                         // Thus if item status didn't change, there will be no event...
+                        logger.info("Ignoring item status that didn't change");
                     }
                 });
             });
